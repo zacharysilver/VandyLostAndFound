@@ -1,25 +1,19 @@
 import express from "express";
-import multer from "multer";
 import { createItem, deleteItem, updateItem, getItems } from "../controllers/item.controller.js";
+import { upload } from "../config/cloudinaryConfig.js"; // <-- Import the cloud-based 'upload'
 
 const router = express.Router();
 
-// Multer Storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Save images to "uploads" folder
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
+// POST → Create item + upload image to Cloudinary
+router.post("/", upload.single("image"), createItem);
 
-const upload = multer({ storage });
-
-// Routes
-router.post("/", upload.single("image"), createItem); // Accepts image
+// GET → Fetch all items (no upload needed)
 router.get("/", getItems);
+
+// DELETE → Remove an item (no upload needed)
 router.delete("/:id", deleteItem);
-router.patch("/:id", upload.single("image"), updateItem); // Accepts image
+
+// PATCH → Update an item + upload new image to Cloudinary if provided
+router.patch("/:id", upload.single("image"), updateItem);
 
 export default router;
