@@ -5,6 +5,7 @@ import { Route, Routes, Navigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import Login from './pages/login'; // ensure component is exported as Login
 import Register from './pages/Register';
+import Verify from './pages/VerifyEmail';
 import Profile from './pages/Profile';
 import CreatePage from './pages/CreatePage';
 import Navbar from './components/Navbar';
@@ -22,7 +23,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-
+          <Route path="/verify" element={<Verify />} /> 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/profile" element={<Profile />} />
