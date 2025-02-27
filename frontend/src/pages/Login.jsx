@@ -44,6 +44,7 @@ const Login = () => {  // Renamed to Login
           duration: 3000,
           isClosable: true,
         });
+        navigate('/');
       } else {
         toast({
           title: 'Error',
@@ -68,7 +69,7 @@ const Login = () => {  // Renamed to Login
   };
 
   return (
-    <Box maxW="400px" mx="auto" mt="50px" p="6" boxShadow="lg" borderRadius="md" bg="white">
+    <Box maxW="400px" mx="auto" mt="50px" p="6" boxShadow="lg" borderRadius="md">
       <Heading mb="4">Login</Heading>
       <form onSubmit={handleLogin}>
         <VStack spacing="4">
