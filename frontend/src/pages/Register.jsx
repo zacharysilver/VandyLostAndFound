@@ -1,18 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Button, Input, FormControl, FormLabel, Heading, VStack, Text, useToast } from "@chakra-ui/react";
-import { useAuth } from "../context/AuthContext"; // Import Auth
+import { useAuth } from "../context/AuthContext";
 
-const Register = () => {
-    const [name, setName] = useState("");
+const Login = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const toast = useToast();
     const navigate = useNavigate();
-    const { login } = useAuth(); // Use login function
+    const { login } = useAuth();
 
-    const handleRegister = async (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
 
@@ -29,34 +28,58 @@ const Register = () => {
         }
 
         try {
-            const response = await fetch("http://localhost:3000/api/auth/register", {
+            const response = await fetch("http://localhost:3000/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, password }),
+                body: JSON.stringify({ email, password }),
             });
 
             const data = await response.json();
+<<<<<<< Updated upstream
 
+=======
+            console.log("Login response:", response.status, data);
+            
+>>>>>>> Stashed changes
             if (response.ok) {
+                // Store token and login
+                login(data.token, data.user);
+                
                 toast({
+<<<<<<< Updated upstream
                     title: "Registration Successful",
                     description: "Welcome! Redirecting to homepage...",
+=======
+                    title: "Login Successful",
+                    description: "Welcome back!",
+>>>>>>> Stashed changes
                     status: "success",
                     duration: 3000,
                     isClosable: true,
                 });
+<<<<<<< Updated upstream
 
                 login(data.token); // ✅ Save token & log in user
+=======
+                navigate("/");
+>>>>>>> Stashed changes
             } else {
+                // Handle different error formats
+                const errorMessage = data.msg || (data.errors && data.errors[0]?.msg) || "Login failed";
                 toast({
                     title: "Error",
+<<<<<<< Updated upstream
                     description: data.msg || "Registration failed. Email may already be in use.",
+=======
+                    description: errorMessage,
+>>>>>>> Stashed changes
                     status: "error",
                     duration: 3000,
                     isClosable: true,
                 });
             }
         } catch (error) {
+            console.error("Login error:", error);
             toast({
                 title: "Server Error",
                 description: "Failed to connect to the server. Please try again later.",
@@ -71,29 +94,38 @@ const Register = () => {
 
     return (
         <Box maxW="400px" mx="auto" mt="50px" p="6" boxShadow="lg" borderRadius="md">
-            <Heading mb="4">Register</Heading>
-            <form onSubmit={handleRegister}>
+            <Heading mb="4">Login</Heading>
+            <form onSubmit={handleLogin}>
                 <VStack spacing="4">
                     <FormControl isRequired>
-                        <FormLabel>Name</FormLabel>
-                        <Input type="text" placeholder="Enter your name" value={name} onChange={(e) => setName(e.target.value)} />
-                    </FormControl>
-
-                    <FormControl isRequired>
                         <FormLabel>Email</FormLabel>
-                        <Input type="email" placeholder="Enter your Vanderbilt email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                        <Input 
+                            type="email" 
+                            placeholder="Enter your Vanderbilt email" 
+                            value={email} 
+                            onChange={(e) => setEmail(e.target.value)} 
+                        />
                     </FormControl>
 
                     <FormControl isRequired>
                         <FormLabel>Password</FormLabel>
-                        <Input type="password" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                        <Input 
+                            type="password" 
+                            placeholder="Enter your password" 
+                            value={password} 
+                            onChange={(e) => setPassword(e.target.value)} 
+                        />
                     </FormControl>
 
-                    <Button colorScheme="blue" type="submit" isLoading={loading} width="full">Register</Button>
+                    <Button colorScheme="blue" type="submit" isLoading={loading} width="full">
+                        Login
+                    </Button>
 
                     <Text>
-                        Already have an account?{" "}
-                        <Button variant="link" colorScheme="blue" onClick={() => navigate("/login")}>Login</Button>
+                        Don't have an account?{" "}
+                        <Button variant="link" colorScheme="blue" onClick={() => navigate("/register")}>
+                            Register
+                        </Button>
                     </Text>
                 </VStack>
             </form>
@@ -101,4 +133,4 @@ const Register = () => {
     );
 };
 
-export default Register;
+export default Login;
