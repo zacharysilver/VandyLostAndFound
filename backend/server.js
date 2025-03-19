@@ -6,8 +6,15 @@ import itemRouter from "./routes/item.router.js";
 import { authRouter } from "./routes/auth.router.js";
 import { userRouter } from "./routes/user.router.js";
 import { authMiddleware } from "./middleware/authMiddleware.js";
+import { messageRouter } from "./routes/message.router.js";
 
-dotenv.config();
+// ✅ Load environment variables from project root
+const envLoaded = dotenv.config({ path: "../.env" });
+
+if (envLoaded.error) {
+  console.error("❌ ERROR: .env file not found. Make sure you have a .env file in the project root.");
+  process.exit(1);
+}
 
 console.log("JWT_SECRET Loaded:", process.env.JWT_SECRET ? "✅ Exists" : "❌ MISSING");
 
@@ -26,6 +33,7 @@ app.use(
   })
 );
 
+// ✅ Connect to MongoDB
 connectDB()
   .then(() => console.log("✅ MongoDB Connected"))
   .catch((err) => {
@@ -33,24 +41,31 @@ connectDB()
     process.exit(1);
   });
 
+// ✅ API Routes
 app.use("/api/items", itemRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
 app.use("/uploads", express.static("uploads"));
+app.use("/api/messages", messageRouter);
 
+
+// ✅ Protected Route Example
 app.get("/api/protected", authMiddleware, (req, res) => {
   res.json({ msg: "Access granted to protected route!", user: req.user });
 });
 
+// ✅ Default Route
 app.get("/", (req, res) => {
   res.send("🔗 Welcome to VandyLostAndFound API");
 });
 
+// ✅ Global Error Handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Something went wrong!" });
 });
 
+// ✅ Start Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
