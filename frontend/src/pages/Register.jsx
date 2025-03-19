@@ -35,44 +35,25 @@ const Login = () => {
             });
 
             const data = await response.json();
-<<<<<<< Updated upstream
-
-=======
-            console.log("Login response:", response.status, data);
-            
->>>>>>> Stashed changes
             if (response.ok) {
                 // Store token and login
                 login(data.token, data.user);
                 
                 toast({
-<<<<<<< Updated upstream
                     title: "Registration Successful",
                     description: "Welcome! Redirecting to homepage...",
-=======
-                    title: "Login Successful",
-                    description: "Welcome back!",
->>>>>>> Stashed changes
                     status: "success",
                     duration: 3000,
                     isClosable: true,
                 });
-<<<<<<< Updated upstream
 
                 login(data.token); // ✅ Save token & log in user
-=======
-                navigate("/");
->>>>>>> Stashed changes
             } else {
                 // Handle different error formats
                 const errorMessage = data.msg || (data.errors && data.errors[0]?.msg) || "Login failed";
                 toast({
                     title: "Error",
-<<<<<<< Updated upstream
                     description: data.msg || "Registration failed. Email may already be in use.",
-=======
-                    description: errorMessage,
->>>>>>> Stashed changes
                     status: "error",
                     duration: 3000,
                     isClosable: true,
