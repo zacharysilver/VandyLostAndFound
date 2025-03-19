@@ -43,7 +43,7 @@ const MapPage = () => {
   // Use the hook instead of LoadScript component
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: 'AIzaSyABZL_QaY_H1POpxkebX9X-Jvysi2SwbzQ'
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyABZL_QaY_H1POpxkebX9X-Jvysi2SwbzQ'
   });
 
   const onMapLoad = React.useCallback((map) => {

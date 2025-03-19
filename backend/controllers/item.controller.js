@@ -2,7 +2,6 @@ import Item from "../models/item.model.js";
 
 // ✅ Create Item (Supports Image Upload)
 export const createItem = async (req, res) => {
-<<<<<<< Updated upstream
     try {
         const { name, description, dateFound } = req.body;
         if (!name || !dateFound || !description) {
@@ -21,47 +20,6 @@ export const createItem = async (req, res) => {
         console.error("❌ Error creating item:", error);
         return res.status(500).json({ success: false, message: error.message });
     }
-=======
-  try {
-    const { name, description, dateFound, category, itemType, location } = req.body;
-    
-    if (!name || !dateFound || !description) {
-      return res
-        .status(400)
-        .json({ success: false, message: "All fields are required" });
-    }
-
-    // Parse location if it's a string (from FormData)
-    let locationData = location;
-    if (location && typeof location === 'string') {
-      try {
-        locationData = JSON.parse(location);
-      } catch (error) {
-        console.error("Error parsing location data:", error);
-      }
-    }
-
-    // Cloudinary sets req.file.path to the public URL of the uploaded image
-    const imageUrl = req.file ? req.file.path : "";
-
-    const newItem = new Item({
-      name,
-      description,
-      dateFound: new Date(dateFound),
-      image: imageUrl,
-      category: category || 'Other',
-      itemType: itemType || 'found',
-      location: locationData,
-      user: req.user ? req.user.id : null
-    });
-
-    await newItem.save();
-    return res.status(201).json({ success: true, data: newItem });
-  } catch (error) {
-    console.error("❌ Error creating item:", error);
-    return res.status(500).json({ success: false, message: error.message });
-  }
->>>>>>> Stashed changes
 };
 
 // ✅ Delete Item
@@ -81,7 +39,6 @@ export const deleteItem = async (req, res) => {
 
 // ✅ Update Item
 export const updateItem = async (req, res) => {
-<<<<<<< Updated upstream
     try {
         if (req.body.dateFound) {
             req.body.dateFound = new Date(req.body.dateFound);
@@ -91,27 +48,6 @@ export const updateItem = async (req, res) => {
         if (req.file) {
             req.body.image = `/uploads/${req.file.filename}`;
         }
-=======
-  try {
-    // Handle date formatting
-    if (req.body.dateFound) {
-      req.body.dateFound = new Date(req.body.dateFound);
-    }
-
-    // Parse location if it's a string
-    if (req.body.location && typeof req.body.location === 'string') {
-      try {
-        req.body.location = JSON.parse(req.body.location);
-      } catch (error) {
-        console.error("Error parsing location data:", error);
-      }
-    }
-
-    // If a new image is uploaded to Cloudinary, set req.body.image to req.file.path
-    if (req.file) {
-      req.body.image = req.file.path;
-    }
->>>>>>> Stashed changes
 
         const updatedItem = await Item.findByIdAndUpdate(req.params.id, req.body, { new: true });
 
