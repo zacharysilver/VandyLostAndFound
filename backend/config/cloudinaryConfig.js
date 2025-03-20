@@ -6,6 +6,15 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Log Cloudinary config status for debugging
+console.log("Cloudinary Config:", {
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? "✅" : "❌",
+  api_key: process.env.CLOUDINARY_API_KEY ? "✅" : "❌",
+  api_secret: process.env.CLOUDINARY_API_SECRET ? "✅" : "❌"
+});
+
+
+
 // 1. Configure Cloudinary with your credentials
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -22,6 +31,7 @@ const storage = new CloudinaryStorage({
   },
 });
 
+export { upload, cloudinary };
 // 3. The upload middleware
 const upload = multer({ storage });
 
