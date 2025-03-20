@@ -28,6 +28,10 @@ const ItemCard = ({ item }) => {
     ? (item.image.startsWith("http") ? item.image : `http://localhost:3000${item.image}`)
     : null;
 
+   // ADD THESE LOGS FOR DEBUGGING:
+  console.log("Item in ItemCard:", item);
+  console.log("Computed Image URL:", imageUrl);
+
   return (
     <>
       <Box
