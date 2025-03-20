@@ -4,6 +4,13 @@ import { Box, Spinner } from '@chakra-ui/react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ChatProvider } from './context/ChatContext';
+
+import HomePage from './pages/HomePage';
+import Login from './pages/login'; // ensure component is exported as Login
+import Register from './pages/Register';
+import Verify from './pages/VerifyEmail';
+import Profile from './pages/Profile';
+import CreatePage from './pages/CreatePage';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 

@@ -41,19 +41,20 @@ const Login = () => {
                 
                 toast({
                     title: "Registration Successful",
-                    description: "Welcome! Redirecting to homepage...",
+                    description: "Thanks! We've emailed you a verification code. Be sure to check your spam folder",
                     status: "success",
                     duration: 3000,
                     isClosable: true,
                 });
 
-                login(data.token); // ✅ Save token & log in user
+                
+                navigate("/verify"); // Redirect to homepage
             } else {
                 // Handle different error formats
                 const errorMessage = data.msg || (data.errors && data.errors[0]?.msg) || "Login failed";
                 toast({
                     title: "Error",
-                    description: data.msg || "Registration failed. Email may already be in use.",
+                    description:  data.errors[0].msg || "Registration failed. Email may already be in use.",
                     status: "error",
                     duration: 3000,
                     isClosable: true,
