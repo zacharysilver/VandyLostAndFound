@@ -3,36 +3,36 @@ import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
 import dotenv from 'dotenv';
+import path from 'path';
 
-dotenv.config();
+// Load root-level .env
+dotenv.config(); // Load from root automatically
 
-// Log Cloudinary config status for debugging
-console.log("Cloudinary Config:", {
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? "✅" : "❌",
-  api_key: process.env.CLOUDINARY_API_KEY ? "✅" : "❌",
-  api_secret: process.env.CLOUDINARY_API_SECRET ? "✅" : "❌"
-});
+// Debug Cloudinary config (optional for dev)
+if (process.env.NODE_ENV !== 'production') {
+  console.log("Cloudinary Config:", {
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? "✅" : "❌",
+    api_key: process.env.CLOUDINARY_API_KEY ? "✅" : "❌",
+    api_secret: process.env.CLOUDINARY_API_SECRET ? "✅" : "❌"
+  });
+}
 
-
-
-// 1. Configure Cloudinary with your credentials
+// Configure Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// 2. Create a Multer storage engine that uploads files to your Cloudinary account
+// Cloudinary storage config
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: 'lost-and-found', // or any folder name you prefer in Cloudinary
-    allowedFormats: ['jpg', 'png', 'jpeg']
+    folder: 'lost-and-found',
+    allowedFormats: ['jpg', 'png', 'jpeg'],
   },
 });
 
-export { upload, cloudinary };
-// 3. The upload middleware
 const upload = multer({ storage });
 
 export { upload, cloudinary };

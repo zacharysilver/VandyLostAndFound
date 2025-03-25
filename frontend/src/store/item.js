@@ -1,3 +1,4 @@
+// File: frontend/store/item.js (or useItemStore.js)
 import create from 'zustand';
 
 export const useItemStore = create((set, get) => ({
@@ -5,33 +6,73 @@ export const useItemStore = create((set, get) => ({
   searchQuery: '',
   startDate: '',
   endDate: '',
-  
+  isLoading: false,
+  error: null,
+
   fetchItems: async () => {
     try {
-      const res = await fetch('http://localhost:3000/api/items');
+      set({ isLoading: true, error: null });
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      const res = await fetch('/api/items', {
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        throw new Error(`Server responded with status: ${res.status}`);
+      }
+
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Server did not return JSON');
+      }
+
       const data = await res.json();
-      if (res.ok && data.success) {
-        set({ items: data.data });
+
+      if (data.success) {
+        set({ items: data.data, isLoading: false });
       } else {
-        console.error('Failed to fetch items:', data.message);
+        throw new Error(data.message || 'Failed to fetch items');
       }
     } catch (error) {
       console.error('Error fetching items:', error);
+      set({ error: error.message, isLoading: false });
     }
   },
-  
+
   setSearchQuery: (query) => set({ searchQuery: query }),
   setStartDate: (date) => set({ startDate: date }),
   setEndDate: (date) => set({ endDate: date }),
-  
+
   filteredItems: () => {
     const { items, searchQuery, startDate, endDate } = get();
+
     return items.filter((item) => {
-      const matchQuery = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const itemDate = new Date(item.dateFound);
+      const matchQuery = searchQuery
+        ? item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()))
+        : true;
+
+      let itemDate;
+      try {
+        itemDate = new Date(item.dateFound);
+      } catch {
+        return false;
+      }
+
       const matchStart = startDate ? itemDate >= new Date(startDate) : true;
       const matchEnd = endDate ? itemDate <= new Date(endDate) : true;
+
       return matchQuery && matchStart && matchEnd;
     });
   },
+
+  clearFilters: () => set({ searchQuery: '', startDate: '', endDate: '' }),
 }));

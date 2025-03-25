@@ -64,13 +64,11 @@ export const updateItem = async (req, res) => {
     });
 
     if (updatedItem) {
-      return res
-        .status(200)
-        .json({
-          success: true,
-          message: "Item updated successfully",
-          data: updatedItem,
-        });
+      return res.status(200).json({
+        success: true,
+        message: "Item updated successfully",
+        data: updatedItem,
+      });
     } else {
       return res
         .status(404)
@@ -93,34 +91,34 @@ export const getItems = async (req, res) => {
   }
 };
 
-// ✅ Get items for map view (simplified for map markers)
-export const getItemsForMap = async (req, res) => {
-  try {
-    // Only get items with location coordinates
-    const items = await Item.find({
-      'location.coordinates': { $exists: true }
-    })
-    .select('name description image itemType location status');
-    
-    return res.status(200).json({ success: true, data: items });
-  } catch (error) {
-    console.error("❌ Error fetching map items:", error);
-    return res.status(500).json({ success: false, message: error.message });
-  }
-};
-
 // ✅ Get a single item by ID
 export const getItemById = async (req, res) => {
   try {
     const item = await Item.findById(req.params.id);
-    
+
     if (!item) {
-      return res.status(404).json({ success: false, message: "Item not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Item not found" });
     }
-    
+
     return res.status(200).json({ success: true, data: item });
   } catch (error) {
     console.error("❌ Error fetching item:", error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ✅ Get items for map view (simplified for map markers)
+export const getItemsForMap = async (req, res) => {
+  try {
+    const items = await Item.find({
+      'location.coordinates': { $exists: true },
+    }).select('name description image itemType location status');
+
+    return res.status(200).json({ success: true, data: items });
+  } catch (error) {
+    console.error("❌ Error fetching map items:", error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };

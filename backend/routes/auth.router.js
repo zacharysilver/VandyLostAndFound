@@ -10,10 +10,10 @@ import nodemailer from 'nodemailer';
 dotenv.config();
 
 const router = express.Router();
-
 const isVanderbiltEmail = (email) => email.toLowerCase().endsWith('@vanderbilt.edu');
 
-// Register Route
+
+// ✅ REGISTER with email verification
 router.post(
   '/register',
   [
@@ -34,25 +34,23 @@ router.post(
     try {
       let user = await User.findOne({ email });
       if (user) return res.status(400).json({ msg: 'User already exists' });
-  
+
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
-      
       user = new User({ name, email, password: hashedPassword });
 
-
+      // ✅ SendGrid Email Verification
       const transporter = nodemailer.createTransport({
         host: 'smtp.sendgrid.net',
         port: 465,
         secure: true,
         auth: {
-          user: 'apikey', // Literally "apikey", not your email
-          pass: process.env.SENDGRID_API_KEY, // Your SendGrid API key
-        }
+          user: 'apikey',
+          pass: process.env.SENDGRID_API_KEY,
+        },
       });
 
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
@@ -69,7 +67,7 @@ router.post(
       const salt2 = await bcrypt.genSalt(10);
       const hashedVerificationCode = await bcrypt.hash(verificationCode, salt2);
       user.verificationCode = hashedVerificationCode;
-      user.verificationCodeExpiration= Date.now() + 3600000; // 1 hour from now
+      user.verificationCodeExpiration = Date.now() + 3600000;
 
       await user.save();
       return res.status(200).json({ msg: 'Registration successful. Please check your email for the verification code.' });
@@ -80,38 +78,43 @@ router.post(
   }
 );
 
-// Verify Email Route
-router.post('/verify-email',   [
-  body('email', 'Valid Vanderbilt email is required').isEmail(),
-  body('verificationCode', 'vc is required').exists(),
-], async (req, res) => {
-  const { email, verificationCode } = req.body;
-  try {
-    const user = await User.findOne({
-      email
-    });
 
-    if(!user) return res.status(400).json({ msg: 'User not found' });
-    if (user.verificationCodeExpiration < Date.now()) {
-      return res.status(400).json({ msg: 'Verification code expired' });
+// ✅ VERIFY EMAIL
+router.post(
+  '/verify-email',
+  [
+    body('email', 'Valid Vanderbilt email is required').isEmail(),
+    body('verificationCode', 'Verification code is required').exists(),
+  ],
+  async (req, res) => {
+    const { email, verificationCode } = req.body;
+    try {
+      const user = await User.findOne({ email });
+      if (!user) return res.status(400).json({ msg: 'User not found' });
+
+      if (user.verificationCodeExpiration < Date.now()) {
+        return res.status(400).json({ msg: 'Verification code expired' });
+      }
+
+      const isMatch = await bcrypt.compare(String(verificationCode), String(user.verificationCode));
+      if (!isMatch) return res.status(400).json({ msg: 'Invalid verification code' });
+
+      user.isVerified = true;
+      await user.save();
+
+      const payload = { user: { id: user.id } };
+      const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+      res.json({ token, user: { id: user.id, name: user.name, email } });
+    } catch (err) {
+      console.error(err.message);
+      res.status(500).send('Server Error');
     }
-    // Compare the hashed verification code with the one provided by the user
-    const isMatch = await bcrypt.compare(String(verificationCode), String(user.verificationCode));
-    if (!isMatch) return res.status(400).json({ msg: 'Invalid verification code' });
-    user.isVerified = true;
-    await user.save();
-    const payload = { user: { id: user.id } };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-
-    res.json({ token, user: { id: user.id, name: user.name, email } });
-
-  } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
   }
-});
-// Login Route
+);
+
+
+// ✅ LOGIN (with isVerified check)
 router.post(
   '/login',
   [
@@ -134,7 +137,9 @@ router.post(
 
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) return res.status(400).json({ msg: 'Invalid Credentials' });
-      if(!user.isVerified) return res.status(400).json({ msg: 'Email not verified' });
+
+      if (!user.isVerified) return res.status(400).json({ msg: 'Email not verified' });
+
       const payload = { user: { id: user.id } };
       const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
@@ -146,7 +151,8 @@ router.post(
   }
 );
 
-// Fetch Logged-in User Data
+
+// ✅ Get current user info
 router.get('/me', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');

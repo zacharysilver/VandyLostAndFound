@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Box, Heading, Text, Image, useColorModeValue, useColorMode } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import ItemDetailModal from "./ItemDetailModal";
+import ItemDetailModal from "../components/ItemDetailModal";
 
 const ItemCard = ({ item }) => {
   const navigate = useNavigate();
@@ -25,12 +25,8 @@ const ItemCard = ({ item }) => {
 
   // Only compute imageUrl if item.image exists
   const imageUrl = item.image
-    ? (item.image.startsWith("http") ? item.image : `http://localhost:3000${item.image}`)
+    ? (item.image.startsWith("http") ? item.image : `/api${item.image}`)
     : null;
-
-   // ADD THESE LOGS FOR DEBUGGING:
-  console.log("Item in ItemCard:", item);
-  console.log("Computed Image URL:", imageUrl);
 
   return (
     <>

@@ -4,25 +4,18 @@ import { Box, Spinner } from '@chakra-ui/react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ChatProvider } from './context/ChatContext';
-
-import HomePage from './pages/HomePage';
-import Login from './pages/login'; // ensure component is exported as Login
-import Register from './pages/Register';
-import Verify from './pages/VerifyEmail';
-import Profile from './pages/Profile';
-import CreatePage from './pages/CreatePage';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 
-// Lazy load pages to reduce initial bundle size
+// ✅ Lazy load pages for better performance
 const HomePage = lazy(() => import('./pages/HomePage'));
-const Login = lazy(() => import('./pages/login'));
+const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const Verify = lazy(() => import('./pages/VerifyEmail'));
 const Profile = lazy(() => import('./pages/Profile'));
 const CreatePage = lazy(() => import('./pages/CreatePage'));
-const MapPage = lazy(() => import('./pages/MapPage'));
-const ChatPage = lazy(() => import('./pages/ChatPage'));
+const MapPage = lazy(() => import('./pages/MapPage'));        // ✅ Coworker addition
+const ChatPage = lazy(() => import('./pages/ChatPage'));      // ✅ Coworker addition
 
 function App() {
   return (
@@ -43,13 +36,13 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/verify" element={<Verify />} />
-              <Route path="/map" element={<MapPage />} />
+              <Route path="/map" element={<MapPage />} />          {/* ✅ New */}
 
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/create" element={<CreatePage />} />
-                <Route path="/messages" element={<ChatPage />} />
+                <Route path="/messages" element={<ChatPage />} />  {/* ✅ New */}
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />
@@ -61,4 +54,4 @@ function App() {
   );
 }
 
-export default React.memo(App);
+export default React.memo(App); // ✅ Small performance win
