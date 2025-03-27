@@ -6,54 +6,57 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token') || null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetchUserProfile(token);
-    } else {
-      setLoading(false);
-    }
-  }, []);
-
-  const fetchUserProfile = async (token) => {
+  const fetchUserProfile = async (providedToken) => {
     try {
-      // Updated endpoint here:
-      const res = await fetch('http://localhost:3000/api/users/profile', {
+      const res = await fetch('/api/auth/me', {
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${providedToken}`,
         },
       });
       const data = await res.json();
-      if (res.ok) {
+      if (res.ok && data.user) {
         setUser(data.user);
       } else {
-        logout();
+        console.warn('Failed to load user profile');
+        setUser(null);
       }
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-      logout();
+    } catch (err) {
+      console.error('Error fetching profile:', err);
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  const login = (token) => {
-    localStorage.setItem('token', token);
-    fetchUserProfile(token);
+  const login = (newToken) => {
+    localStorage.setItem('token', newToken);
+    setToken(newToken);
+    fetchUserProfile(newToken);
     navigate('/profile');
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    setToken(null);
     setUser(null);
     navigate('/login');
   };
 
+  const refetchUser = () => {
+    if (token) fetchUserProfile(token);
+  };
+
+  useEffect(() => {
+    if (token) fetchUserProfile(token);
+    else setLoading(false);
+  }, [token]);
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, refetchUser, loading }}>
       {children}
     </AuthContext.Provider>
   );
