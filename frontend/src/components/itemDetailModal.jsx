@@ -23,7 +23,7 @@ import {
   Textarea,
   useToast
 } from '@chakra-ui/react';
-import { FaMapMarkerAlt, FaCalendarAlt, FaTag, FaBuilding, FaComment } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCalendarAlt, FaTag, FaBuilding, FaComment, FaTrash } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -38,8 +38,7 @@ const ItemDetailModal = ({ isOpen, onClose, item }) => {
   if (!item) return null;
   
   // Check if the current user is the owner of the item
-  const isOwner = user && item.user === user.id;
-  
+  const isOwner = user && item.user === user._id;
   // Format date
   const formatDate = (dateString) => {
     try {
@@ -63,6 +62,100 @@ const ItemDetailModal = ({ isOpen, onClose, item }) => {
   const bgColor = useColorModeValue('white', 'gray.800');
   const textColor = useColorModeValue('gray.700', 'white');
 
+  const handleDeleteItem = async () => {
+    try {
+      // Get the auth token from local storage
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/items/${item._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (response.ok) {
+        toast({
+          title: "Item Deleted",
+          description: "The item has been successfully deleted. You may need to refresh to see changes.",
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
+        onClose();
+      } else {
+        toast({
+          title: "Error",
+          description: data.message || "Failed to delete item",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete item. Please try again later.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  const handleFollow = async () => {
+    try {
+
+    if (!user) {
+      toast({
+        title: "Please log in",
+        description: "You need to log in to follow this item",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      navigate("/login");
+      return;
+    }
+    const token = localStorage.getItem('token');
+    const response = await fetch(`/api/items/follow/${item._id}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const data = await response.json();
+    if (response.ok) {
+      toast({
+        title: "Followed",
+        description: "You are now following this item.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: data.message || "Failed to follow item",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }
+
+    catch (error) {
+      console.error('Error following item:', error);
+      toast({
+        title: "Error",
+        description: "Failed to follow item. Please try again later.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
   // Handle opening contact modal
   const handleOpenContact = () => {
     if (!user) {
@@ -79,6 +172,7 @@ const ItemDetailModal = ({ isOpen, onClose, item }) => {
     
     openContact();
   };
+
 
   // Handle sending a message
   const handleSendMessage = async () => {
@@ -301,7 +395,16 @@ const ItemDetailModal = ({ isOpen, onClose, item }) => {
           </ModalBody>
 
           <ModalFooter>
-            {!isOwner && (
+            {(!isOwner) && (
+              <Button 
+                colorScheme="blue" 
+                mr={3} 
+                onClick={handleFollow}
+              >
+                Follow
+              </Button>
+            )}
+            {(!isOwner) && (
               <Button 
                 leftIcon={<FaComment />} 
                 colorScheme="green" 
@@ -309,6 +412,16 @@ const ItemDetailModal = ({ isOpen, onClose, item }) => {
                 onClick={handleOpenContact}
               >
                 Contact
+              </Button>
+            )}
+            {isOwner && (
+              <Button 
+                leftIcon={<FaTrash />} 
+                colorScheme="red" 
+                mr={3} 
+                onClick={handleDeleteItem}
+              >
+                Delete
               </Button>
             )}
             <Button colorScheme="blue" onClick={onClose}>

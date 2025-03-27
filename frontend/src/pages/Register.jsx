@@ -12,7 +12,6 @@ import {
   Text,
   useToast,
 } from "@chakra-ui/react";
-
 const Register = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

@@ -1,5 +1,5 @@
 import Item from "../models/item.model.js";
-
+import User from "../models/user.js";
 // ✅ Create Item (Supports Image Upload)
 export const createItem = async (req, res) => {
   try {
@@ -18,9 +18,15 @@ export const createItem = async (req, res) => {
       description,
       dateFound: new Date(dateFound),
       image: imageUrl,
+      user: req.user.id
     });
 
     await newItem.save();
+    // Add the new item's ID to the user's createdItems array
+    await User.findByIdAndUpdate(req.user.id, {
+      $push: { createdItems: newItem._id },
+    });
+
     return res.status(201).json({ success: true, data: newItem });
   } catch (error) {
     console.error("❌ Error creating item:", error);
@@ -28,11 +34,38 @@ export const createItem = async (req, res) => {
   }
 };
 
+export const followItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    await User.findByIdAndUpdate(userId, {
+      $push: { followedItems: id },
+    });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Item followed successfully. You may need to refresh to see the change." });
+  } catch (error) {
+    console.error("❌ Error following item:", error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+}
 // ✅ Delete Item
 export const deleteItem = async (req, res) => {
   try {
     const item = await Item.findByIdAndDelete(req.params.id);
     if (item) {
+      // Remove the deleted item's ID from the user's createdItems array
+
+      await User.findByIdAndUpdate(req.user.id, {
+        $pull: { createdItems: item._id },
+      });
+      // Remove the deleted item's ID from all users' followedItems arrays
+      await User.updateMany(
+        { followedItems: item._id },
+        { $pull: { followedItems: item._id } }
+      );
       return res
         .status(200)
         .json({ success: true, message: "Item deleted successfully" });
@@ -41,6 +74,7 @@ export const deleteItem = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Item not found" });
     }
+    
   } catch (error) {
     console.error("❌ Error deleting item:", error);
     return res.status(500).json({ success: false, message: error.message });

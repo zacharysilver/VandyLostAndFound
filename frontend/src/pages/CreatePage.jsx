@@ -31,6 +31,7 @@ const BUILDINGS = [
   'Sarratt Student Center',
   'Student Life Center',
   'Wilson Hall',
+  'Other'
 ];
 
 const CATEGORIES = [
@@ -218,7 +219,7 @@ const CreatePage = () => {
           </FormControl>
 
           <FormControl isRequired>
-            <FormLabel>Date Found</FormLabel>
+            <FormLabel>{"Date " + (itemType=="lost" ? "Lost" : "Found")}</FormLabel>
             <Input
               type="date"
               value={dateFound}
