@@ -128,7 +128,7 @@ const ItemDetailModal = ({ isOpen, onClose, item }) => {
     if (response.ok) {
       toast({
         title: "Followed",
-        description: "You are now following this item.",
+        description: "You are now following this item. You might need to refresh to see the change",
         status: "success",
         duration: 3000,
         isClosable: true,
