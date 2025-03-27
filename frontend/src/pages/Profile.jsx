@@ -11,12 +11,13 @@ import {
   Spinner,
   useColorModeValue,
   SimpleGrid,
+  Button,
 } from "@chakra-ui/react";
 import ItemCard from "../components/ItemCard";
 import { useAuth } from "../context/AuthContext";
 
 const Profile = () => {
-  const { token } = useAuth();
+  const { token, refetchUser } = useAuth();
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const bgColor = useColorModeValue("white", "gray.700");
@@ -43,6 +44,27 @@ const Profile = () => {
     };
     fetchUser();
   }, [token]);
+
+  const handleUnfollow = async (itemId) => {
+    try {
+      const res = await fetch(`/api/users/unfollow/${itemId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        // ✅ Immediately update local state
+        setUserProfile((prev) => ({
+          ...prev,
+          followedItems: prev.followedItems.filter((item) => item._id !== itemId),
+        }));
+      }
+    } catch (err) {
+      console.error('Error unfollowing:', err);
+    }
+  };
 
   if (loading) {
     return (
@@ -92,7 +114,19 @@ const Profile = () => {
         {userProfile.followedItems?.length > 0 ? (
           <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={10} w="full">
             {userProfile.followedItems.map((item) => (
-              <ItemCard key={item._id} item={item} />
+              <Box key={item._id} position="relative">
+                <ItemCard item={item} />
+                <Button
+                  size="sm"
+                  colorScheme="red"
+                  position="absolute"
+                  top="2"
+                  right="2"
+                  onClick={() => handleUnfollow(item._id)}
+                >
+                  Unfollow
+                </Button>
+              </Box>
             ))}
           </SimpleGrid>
         ) : (
