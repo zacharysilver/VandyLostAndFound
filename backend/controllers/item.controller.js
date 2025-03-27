@@ -9,13 +9,14 @@ export const createItem = async (req, res) => {
         .status(400)
         .json({ success: false, message: "All fields are required" });
     }
-
+    if (req.body.location){
+      req.body.location = JSON.parse(req.body.location);
+    }
     // Cloudinary sets req.file.path to the public URL of the uploaded image
     const imageUrl = req.file ? req.file.path : "";
 
     const newItem = new Item({
-      name,
-      description,
+      ...req.body,
       dateFound: new Date(dateFound),
       image: imageUrl,
       user: req.user.id
